@@ -20,8 +20,15 @@ public class InventoryController(IInventoryService inventoryService) : Controlle
     {
         var product = await inventoryService.GetStockBySku(sku);
         if (product == null) return NotFound("Product not found");
-        
+
         return Ok(new { product.Sku, product.Name, product.CurrentStock });
+    }
+
+    [HttpPut("stock/update")]
+    public async Task<IActionResult> UpdateStock([FromBody] StockDto.ProductStockUpdateDto payload)
+    {
+        var result = await inventoryService.UpdateStock(payload);
+        return Ok(result);
     }
 
     [HttpGet("items")]

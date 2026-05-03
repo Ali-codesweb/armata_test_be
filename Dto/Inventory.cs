@@ -18,4 +18,12 @@ public class Inventory
 
         public int CurrentStock { get; set; }
     }
+
+    public class ProductStockUpdateDto
+    {
+        public string sku { get; set; }
+        public int count { get; set; }
+        public string reason { get; set; } = string.Empty;
+        public string action { get; set; } = string.Empty;
+    }
 }
