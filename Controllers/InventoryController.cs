@@ -1,22 +1,33 @@
-﻿using armada_test.Data;
-using armada_test.Dto;
+using armada_test.IServices;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using StockDto = armada_test.Dto.Inventory;
 
 namespace armada_test.Controllers;
 
 [ApiController]
-public class InventoryController(ApplicationDbContext dbContext) : ControllerBase
+[Route("api")]
+public class InventoryController(IInventoryService inventoryService) : ControllerBase
 {
-    [HttpPost("api/[controller]/[action]")]
-    public async Task<IActionResult> CreateStock([FromBody] Inventory.ProductDto productDto)
+    [HttpPost("items")]
+    public async Task<IActionResult> CreateItem([FromBody] StockDto.ProductDto productDto)
     {
-        if (await dbContext.products.AnyAsync(x => x.Sku == productDto.Sku))
-        {
-            return BadRequest("Kindly Provide Unique SKU");
-        }
-
-        return Ok();
+        var result = await inventoryService.AddProduct(productDto);
+        return Ok(result);
     }
-    
+
+    [HttpGet("stock/{sku}")]
+    public async Task<IActionResult> GetStock(string sku)
+    {
+        var product = await inventoryService.GetStockBySku(sku);
+        if (product == null) return NotFound("Product not found");
+        
+        return Ok(new { product.Sku, product.Name, product.CurrentStock });
+    }
+
+    [HttpGet("items")]
+    public async Task<IActionResult> ListItems()
+    {
+        var products = await inventoryService.GetProducts();
+        return Ok(products);
+    }
 }

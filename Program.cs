@@ -11,10 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(connectionString, sqlOptions => 
+{
+    sqlOptions.EnableRetryOnFailure();
+}));
 
 
 var app = builder.Build();

@@ -1,0 +1,33 @@
+@base_url = http://localhost:5202
+
+### Register a new Item (Success)
+POST {{base_url}}/api/items
+Content-Type: application/json
+
+{
+  "sku": "105105-25001-RED-SML",
+  "name": "Men's T-Shirt",
+  "color": "Red",
+  "size": "S",
+  "price": 15.99,
+  "currentStock": 100
+}
+
+### Register another Item
+POST {{base_url}}/api/items
+Content-Type: application/json
+
+{
+  "sku": "105105-25002-BLU-MED",
+  "name": "Men's T-Shirt",
+  "color": "Blue",
+  "size": "M",
+  "price": 17.99,
+  "currentStock": 50
+}
+
+### Get Stock by SKU
+GET {{base_url}}/api/stock/105105-25001-RED-SML
+
+### List all Items
+GET {{base_url}}/api/items
