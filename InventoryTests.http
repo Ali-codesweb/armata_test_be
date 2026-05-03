@@ -42,3 +42,21 @@ Content-Type: application/json
   "reason": "Automatic",
   "action": "DEDUCT"
 }
+
+
+
+
+### Create Sale
+POST {{base_url}}/api/sales
+Content-Type: application/json
+
+[
+  {
+    "sku": "105105-25001-RED-SML",
+    "quantity": 2
+  },
+  {
+    "sku": "105105-25002-BLU-MED",
+    "quantity": 1
+  }
+]

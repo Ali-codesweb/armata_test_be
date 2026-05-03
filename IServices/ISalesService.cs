@@ -1,8 +1,9 @@
 ﻿using armada_test.Dto;
+using armada_test.Models;
 
 namespace armada_test.IServices;
 
 public interface ISalesService
 {
-    Task<string> CreateSale(List<Sales.SaleItemCreateDto> itemsDto);
+    Task<SaleCreateResponseDto> CreateSale(List<Sales.SaleItemCreateDto> itemsDto);
 }

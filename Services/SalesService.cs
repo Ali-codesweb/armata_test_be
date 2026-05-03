@@ -11,7 +11,7 @@ namespace armada_test.Services;
 
 public class SalesService(ApplicationDbContext dbContext, IInventoryService inventoryService) : ISalesService
 {
-    public async Task<string> CreateSale(List<Sales.SaleItemCreateDto> itemsDto)
+    public async Task<SaleCreateResponseDto> CreateSale(List<Sales.SaleItemCreateDto> itemsDto)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
 
@@ -24,13 +24,13 @@ public class SalesService(ApplicationDbContext dbContext, IInventoryService inve
                 // Validation logic
                 var productIds = itemsDto.Select(x => x.Sku).ToList();
                 var products = await dbContext.products
-                    .Where(p => productIds.Contains(p.Id))
-                    .ToDictionaryAsync(p => p.Id);
+                    .Where(p => productIds.Contains(p.Sku))
+                    .ToDictionaryAsync(p => p.Sku);
 
                 foreach (var item in itemsDto)
                 {
                     if (!products.ContainsKey(item.Sku))
-                        return $"Product {item.Sku} not found";
+                        return new SaleCreateResponseDto("Cannot find product", null);
                 }
 
                 var sale = new Sale
@@ -38,7 +38,7 @@ public class SalesService(ApplicationDbContext dbContext, IInventoryService inve
                     CreatedAt = DateTime.UtcNow,
                     Items = new List<SaleItem>()
                 };
-                
+
                 // Action
                 decimal totalPrice = 0;
                 foreach (var item in itemsDto)
@@ -70,7 +70,7 @@ public class SalesService(ApplicationDbContext dbContext, IInventoryService inve
                 await dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return "Sale created successfully";
+                return new SaleCreateResponseDto("Sale Created Successfully", sale.Id);
             }
             catch
             {

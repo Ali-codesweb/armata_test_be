@@ -12,12 +12,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<ISalesService, SalesService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer(connectionString, sqlOptions => 
-{
-    sqlOptions.EnableRetryOnFailure();
-}));
+builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+    opt.UseSqlServer(connectionString, sqlOptions => { sqlOptions.EnableRetryOnFailure(); }));
 
 
 var app = builder.Build();
