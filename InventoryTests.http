@@ -60,3 +60,11 @@ Content-Type: application/json
     "quantity": 1
   }
 ]
+
+
+### Get Sale
+GET {{base_url}}/api/sales/10
+
+
+### Return Sale
+POST {{base_url}}/api/sales/13/return

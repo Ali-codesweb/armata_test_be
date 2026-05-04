@@ -13,5 +13,20 @@ public class Sales
 
 public record SaleCreateResponseDto(
     string Message,
-    int? saleId
+    int? saleId,
+    string? pdfUrl = null
+);
+
+public record SaleDetailDto(
+    int Id,
+    DateTime CreatedAt,
+    decimal TotalPrice,
+    List<SaleItemDetailDto> Items,
+    bool isReturned
+);
+
+public record SaleItemDetailDto(
+    string ProductName,
+    int Quantity,
+    decimal UnitPrice
 );

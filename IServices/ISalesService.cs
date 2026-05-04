@@ -6,4 +6,6 @@ namespace armada_test.IServices;
 public interface ISalesService
 {
     Task<SaleCreateResponseDto> CreateSale(List<Sales.SaleItemCreateDto> itemsDto);
+    Task<SaleDetailDto?> GetSaleDetail(int saleId);
+    Task<string> ReturnSale(int saleId);
 }

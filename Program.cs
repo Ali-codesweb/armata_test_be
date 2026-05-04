@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ISalesService, SalesService>();
 
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 
 var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseStaticFiles();
 app.MapControllers();
 
 

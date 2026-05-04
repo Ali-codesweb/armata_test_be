@@ -15,4 +15,18 @@ public class SalesController(ISalesService salesService) : ControllerBase
         var result = await salesService.CreateSale(saleItemCreateDto);
         return Ok(result);
     }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetSaleDetail(int id)
+    {
+        var result = await salesService.GetSaleDetail(id);
+        return Ok(result);
+    }
+
+    [HttpPost("{id}/return")]
+    public async Task<IActionResult> ReturnSale(int id)
+    {
+        var result = await salesService.ReturnSale(id);
+        return Ok(result);
+    }
 }
