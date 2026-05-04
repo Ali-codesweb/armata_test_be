@@ -8,3 +8,4 @@ docker compose up -d
 ```
 
 - Incase the database is not created run : docker exec -it armada_db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Armada@Password123" -C -Q "CREATE DATABASE ArmadaTestDb"
+- All API are listed in  ./InventoryTests.http
