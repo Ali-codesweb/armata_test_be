@@ -1,5 +1,4 @@
-﻿
-services:
+﻿services:
   armada_db:
     image: mcr.microsoft.com/mssql/server:2019-latest
     container_name: armada_db
@@ -10,10 +9,43 @@ services:
       test:
         [
           "CMD-SHELL",
-          "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Armada@Password123' -Q 'SELECT 1' || exit 1",
+          '/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Armada@Password123" -C -Q "SELECT 1" || exit 1',
         ]
       interval: 10s
-      timeout: 3s
+      timeout: 10s
       retries: 10
+      start_period: 30s
     ports:
       - "1433:1433"
+  armada_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: armada_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=armada_db;Database=ArmadaTestDb;User Id=sa;Password=Armada@Password123;TrustServerCertificate=True;
+    ports:
+      - "5000:8080"
+    depends_on:
+      armada_db:
+        condition: service_healthy
+    volumes:
+      - ./wwwroot/Assets/SalesInvoice:/app/wwwroot/Assets/SalesInvoice
+
+# services:
+#   armada_db:
+#     image: mcr.microsoft.com/mssql/server:2019-latest
+#     container_name: armada_db
+#     environment:
+#       - ACCEPT_EULA=Y
+#       - SA_PASSWORD=Armada@Password123
+#     healthcheck:
+#       test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'Armada@Password123' -C -Q 'SELECT 1' || exit 1" ]
+#       interval: 5s
+#       timeout: 5s
+#       retries: 5
+#       start_period: 15s
+#     ports:
+#       - "1433:1433"

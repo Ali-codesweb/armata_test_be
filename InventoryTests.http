@@ -1,4 +1,4 @@
-@base_url = http://localhost:5202
+@base_url = http://localhost:5000
 
 ### Register a new Item (Success)
 POST {{base_url}}/api/items
