@@ -44,8 +44,6 @@ Content-Type: application/json
 }
 
 
-
-
 ### Create Sale
 POST {{base_url}}/api/sales
 Content-Type: application/json
@@ -63,8 +61,26 @@ Content-Type: application/json
 
 
 ### Get Sale
-GET {{base_url}}/api/sales/10
+GET {{base_url}}/api/sales/14
 
 
 ### Return Sale
-POST {{base_url}}/api/sales/13/return
+POST {{base_url}}/api/sales/14/return
+
+
+### Payment
+POST {{base_url}}/api/payment/pay
+Content-Type: application/json
+
+{
+  "SaleId": 14
+}
+
+
+### Payment
+POST {{base_url}}/api/payment/refund
+Content-Type: application/json
+
+{
+  "SaleId": 14
+}

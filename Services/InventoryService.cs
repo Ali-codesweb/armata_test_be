@@ -1,4 +1,5 @@
 using armada_test.Data;
+using armada_test.Dto;
 using armada_test.IServices;
 using Microsoft.EntityFrameworkCore;
 using ModelSchema = armada_test.Models.Inventory;
@@ -8,11 +9,11 @@ namespace armada_test.Services;
 
 public class InventoryService(ApplicationDbContext dbContext) : IInventoryService
 {
-    public async Task<string> AddProduct(StockDto.ProductDto productDto)
+    public async Task<ApiResponse<string>> AddProduct(StockDto.ProductDto productDto)
     {
         if (await dbContext.products.AnyAsync(x => x.Sku == productDto.Sku))
         {
-            throw new Exception("SKU must be unique.");
+            return new ApiResponse<string>(false, "SKU must be unique.");
         }
 
         var strategy = dbContext.Database.CreateExecutionStrategy();
@@ -25,7 +26,7 @@ public class InventoryService(ApplicationDbContext dbContext) : IInventoryServic
             {
                 if (productDto.CurrentStock < 1)
                 {
-                    return "Product Stock must not be less than 1";
+                    return new ApiResponse<string>(false, "Product Stock must not be less than 1");
                 }
 
                 var newProduct = new ModelSchema.Product
@@ -54,27 +55,33 @@ public class InventoryService(ApplicationDbContext dbContext) : IInventoryServic
                 await dbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
-                return "Product and Initial Stock Ledger created successfully";
+                return new ApiResponse<string>(true, "Product and Initial Stock Ledger created successfully", "Success");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                return new ApiResponse<string>(false, $"Error: {ex.Message}");
             }
         });
     }
 
-    public async Task<List<ModelSchema.Product>> GetProducts()
+    public async Task<ApiResponse<List<ModelSchema.Product>>> GetProducts()
     {
-        return await dbContext.products.ToListAsync();
+        var products = await dbContext.products.ToListAsync();
+        return new ApiResponse<List<ModelSchema.Product>>(true, "Products retrieved successfully", products);
     }
 
-    public async Task<ModelSchema.Product?> GetStockBySku(string sku)
+    public async Task<ApiResponse<ModelSchema.Product?>> GetStockBySku(string sku)
     {
-        return await dbContext.products.FirstOrDefaultAsync(p => p.Sku == sku);
+        var product = await dbContext.products.FirstOrDefaultAsync(p => p.Sku == sku);
+        if (product == null)
+        {
+            return new ApiResponse<ModelSchema.Product?>(false, "Product not found");
+        }
+        return new ApiResponse<ModelSchema.Product?>(true, "Product retrieved successfully", product);
     }
 
-    public async Task<string> UpdateStock(StockDto.ProductStockUpdateDto payload)
+    public async Task<ApiResponse<string>> UpdateStock(StockDto.ProductStockUpdateDto payload)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         return await strategy.ExecuteAsync(async () =>
@@ -83,17 +90,18 @@ public class InventoryService(ApplicationDbContext dbContext) : IInventoryServic
             try
             {
                 var product = await dbContext.products.FirstOrDefaultAsync(x => x.Sku == payload.sku);
-                if (product == null) return "Product Not found";
+                if (product == null) return new ApiResponse<string>(false, "Product Not found");
+                
                 ApplyStockChange(product, payload.count, payload.action, payload.reason);
                 await dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return "Product Stock Updated Successfully";
+                return new ApiResponse<string>(true, "Product Stock Updated Successfully", "Success");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                return new ApiResponse<string>(false, $"Error: {ex.Message}");
             }
         });
     }

@@ -9,5 +9,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Inventory.StockLedgeEntry> stockLedger { get; set; }
     public DbSet<Sale> sales { get; set; }
     public DbSet<SaleItem> saleItems { get; set; }
+    public DbSet<Payment> payments { get; set; }
     
 }

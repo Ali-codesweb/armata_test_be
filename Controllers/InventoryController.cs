@@ -12,29 +12,31 @@ public class InventoryController(IInventoryService inventoryService) : Controlle
     public async Task<IActionResult> CreateItem([FromBody] StockDto.ProductDto productDto)
     {
         var result = await inventoryService.AddProduct(productDto);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
     [HttpGet("stock/{sku}")]
     public async Task<IActionResult> GetStock(string sku)
     {
-        var product = await inventoryService.GetStockBySku(sku);
-        if (product == null) return NotFound("Product not found");
+        var result = await inventoryService.GetStockBySku(sku);
+        if (!result.Success) return NotFound(result);
 
-        return Ok(new { product.Sku, product.Name, product.CurrentStock });
+        return Ok(result);
     }
 
     [HttpPut("stock/update")]
     public async Task<IActionResult> UpdateStock([FromBody] StockDto.ProductStockUpdateDto payload)
     {
         var result = await inventoryService.UpdateStock(payload);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
     [HttpGet("items")]
     public async Task<IActionResult> ListItems()
     {
-        var products = await inventoryService.GetProducts();
-        return Ok(products);
+        var result = await inventoryService.GetProducts();
+        return Ok(result);
     }
 }

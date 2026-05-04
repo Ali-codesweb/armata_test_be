@@ -1,4 +1,4 @@
-﻿using armada_test.Dto;
+using armada_test.Dto;
 using armada_test.IServices;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +13,7 @@ public class SalesController(ISalesService salesService) : ControllerBase
     public async Task<IActionResult> CreateSale([FromBody] List<Sales.SaleItemCreateDto> saleItemCreateDto)
     {
         var result = await salesService.CreateSale(saleItemCreateDto);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 
@@ -20,6 +21,7 @@ public class SalesController(ISalesService salesService) : ControllerBase
     public async Task<IActionResult> GetSaleDetail(int id)
     {
         var result = await salesService.GetSaleDetail(id);
+        if (!result.Success) return NotFound(result);
         return Ok(result);
     }
 
@@ -27,6 +29,7 @@ public class SalesController(ISalesService salesService) : ControllerBase
     public async Task<IActionResult> ReturnSale(int id)
     {
         var result = await salesService.ReturnSale(id);
+        if (!result.Success) return BadRequest(result);
         return Ok(result);
     }
 }

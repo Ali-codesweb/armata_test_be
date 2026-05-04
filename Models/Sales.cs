@@ -11,6 +11,8 @@ public class Sale
     public List<SaleItem> Items { get; set; } = new();
 
     public bool IsReturned { get; set; }
+
+    public string PaymentStatus { get; set; } = "Pending"; // Pending, Paid, Failed, Refunded
 }
 
 public class SaleItem

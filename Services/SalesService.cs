@@ -16,7 +16,7 @@ public class SalesService(
     IWebHostEnvironment webHostEnvironment,
     IHttpContextAccessor httpContextAccessor) : ISalesService
 {
-    public async Task<SaleCreateResponseDto> CreateSale(List<Sales.SaleItemCreateDto> itemsDto)
+    public async Task<ApiResponse<SaleCreateResponseDto>> CreateSale(List<Sales.SaleItemCreateDto> itemsDto)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         int saleId;
@@ -36,7 +36,7 @@ public class SalesService(
                 foreach (var item in itemsDto)
                 {
                     if (!products.ContainsKey(item.Sku))
-                        return new SaleCreateResponseDto("Cannot find product", null);
+                        return new ApiResponse<SaleCreateResponseDto>(false, "Cannot find product");
                 }
 
                 var sale = new Sale
@@ -78,10 +78,10 @@ public class SalesService(
 
                 saleId = sale.Id;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                return new ApiResponse<SaleCreateResponseDto>(false, $"Error: {ex.Message}");
             }
 
             var fullSale = await dbContext.sales
@@ -91,11 +91,11 @@ public class SalesService(
 
             var pdfUrl = GeneratePDF(fullSale!);
 
-            return new SaleCreateResponseDto("Sale Created Successfully", saleId, pdfUrl);
+            return new ApiResponse<SaleCreateResponseDto>(true, "Sale Created Successfully", new SaleCreateResponseDto("Sale Created Successfully", saleId, pdfUrl));
         });
     }
 
-    public async Task<SaleDetailDto?> GetSaleDetail(int saleId)
+    public async Task<ApiResponse<SaleDetailDto?>> GetSaleDetail(int saleId)
     {
         var sale = await dbContext.sales
             .Include(s => s.Items)
@@ -103,9 +103,9 @@ public class SalesService(
             .FirstOrDefaultAsync(s => s.Id == saleId);
 
         if (sale == null)
-            return null;
+            return new ApiResponse<SaleDetailDto?>(false, "Sale not found");
 
-        return new SaleDetailDto(
+        var data = new SaleDetailDto(
             sale.Id,
             sale.CreatedAt,
             sale.TotalPrice,
@@ -116,9 +116,11 @@ public class SalesService(
             )).ToList(),
             sale.IsReturned
         );
+
+        return new ApiResponse<SaleDetailDto?>(true, "Sale detail retrieved successfully", data);
     }
 
-    public async Task<string> ReturnSale(int saleId)
+    public async Task<ApiResponse<string>> ReturnSale(int saleId)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
 
@@ -134,10 +136,10 @@ public class SalesService(
                     .FirstOrDefaultAsync(x => x.Id == saleId);
 
                 if (sale == null)
-                    return "Sale not found";
+                    return new ApiResponse<string>(false, "Sale not found");
 
                 if (sale.IsReturned)
-                    return "Sale already returned";
+                    return new ApiResponse<string>(false, "Sale already returned");
 
                 sale.IsReturned = true;
 
@@ -154,12 +156,12 @@ public class SalesService(
                 await dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return "Sale returned successfully";
+                return new ApiResponse<string>(true, "Sale returned successfully", "Success");
             }
-            catch
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw;
+                return new ApiResponse<string>(false, $"Error: {ex.Message}");
             }
         });
     }
@@ -240,7 +242,6 @@ public class SalesService(
             });
         }).GeneratePdf(absolutePath);
 
-        // Build absolute URL
         var request = httpContextAccessor.HttpContext?.Request;
         if (request == null) return relativePath.Replace("\\", "/");
 
